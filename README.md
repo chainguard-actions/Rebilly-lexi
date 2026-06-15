@@ -10,6 +10,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 |---------|-----|-----------------|
 | v2.3.2 | [`v2.3.2`](https://github.com/chainguard-actions/Rebilly-lexi/tree/v2.3.2) | [`8368896`](https://github.com/Rebilly/lexi/commit/836889642ab324c1390d1dbbf6810c99e1eeaf18) |
 | v2.3.3 | [`v2.3.3`](https://github.com/chainguard-actions/Rebilly-lexi/tree/v2.3.3) | [`9232c95`](https://github.com/Rebilly/lexi/commit/9232c9505fee806666eae6679616d9b60359a39b) |
+| v2.3.4 | [`v2.3.4`](https://github.com/chainguard-actions/Rebilly-lexi/tree/v2.3.4) | [`ccc3607`](https://github.com/Rebilly/lexi/commit/ccc36071310851b6013ca80f7999164e3518e282) |
 | v2.3.5 | [`v2.3.5`](https://github.com/chainguard-actions/Rebilly-lexi/tree/v2.3.5) | [`488dfdc`](https://github.com/Rebilly/lexi/commit/488dfdc828fc30925792e79711bb6dbffd79fb5c) |
 
 ## Privacy
