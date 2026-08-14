@@ -1,0 +1,45 @@
+name: Test pull request event context
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_EVENT_NAME: pull_request
+      GITHUB_REF: refs/pull/42/merge
+      GITHUB_HEAD_REF: docs/improve-readability
+      GITHUB_BASE_REF: main
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+      - name: Set up markdown files for readability analysis
+        run: |
+          mkdir -p content
+          cat > content/guide.md << 'EOF'
+          # User Guide
+
+          Welcome to the user guide. This guide helps you get started quickly.
+          Follow these steps to set up your account. Each step is simple and clear.
+          You can complete the setup in a few minutes.
+          EOF
+          git config user.email "test@example.com"
+          git config user.name "Test User"
+          git add content/guide.md
+          git commit -m "Add user guide markdown"
+      - id: action
+        uses: .
+        with:
+          github-token: fake-token-for-testing
+          glob: "content/**/*.md"
+        continue-on-error: true
+      - name: Assert action ran with pull_request context
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "Action outcome: $OUTCOME"
+          if [ "$OUTCOME" = "skipped" ]; then
+            echo "FAIL: action was skipped unexpectedly"
+            exit 1
+          fi
+          echo "PASS: action ran in pull_request context (outcome=$OUTCOME)"

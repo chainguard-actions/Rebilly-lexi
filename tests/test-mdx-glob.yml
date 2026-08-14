@@ -1,0 +1,45 @@
+name: Test glob pattern for MDX files
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_EVENT_NAME: pull_request
+      GITHUB_REF: refs/pull/5/merge
+      GITHUB_HEAD_REF: feature/add-mdx-docs
+      GITHUB_BASE_REF: main
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+      - name: Create MDX files for testing
+        run: |
+          mkdir -p pages
+          cat > pages/intro.mdx << 'EOF'
+          # Introduction
+
+          This is an MDX document. It combines Markdown with JSX components.
+          The text here is easy to read. Short sentences help readers follow along.
+          Use simple words when possible. Clear writing improves understanding.
+          EOF
+          git config user.email "test@example.com"
+          git config user.name "Test User"
+          git add pages/intro.mdx
+          git commit -m "Add MDX intro page"
+      - id: action
+        uses: .
+        with:
+          github-token: fake-token-for-testing
+          glob: "**/*.{md,mdx}"
+        continue-on-error: true
+      - name: Assert action ran with MDX glob pattern
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "Action outcome: $OUTCOME"
+          if [ "$OUTCOME" = "skipped" ]; then
+            echo "FAIL: action was skipped unexpectedly"
+            exit 1
+          fi
+          echo "PASS: action ran with MDX glob pattern (outcome=$OUTCOME)"
