@@ -1,0 +1,108 @@
+name: PR checks
+
+on: pull_request
+
+permissions:
+    contents: read
+    pull-requests: read
+
+jobs:
+    eslint:
+        name: Eslint
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repo
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+            - name: Setup node
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+              with:
+                  node-version: 22
+            - name: Restore node_modules cache
+              uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+              with:
+                  path: '**/node_modules'
+                  key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+            - name: Install packages
+              run: yarn
+            - name: ESLint
+              run: yarn lint && yarn format-check
+
+    tests:
+        name: Unit tests
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repo
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+            - name: Setup node
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+              with:
+                  node-version: 22
+            - name: Restore node_modules cache
+              uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+              with:
+                  path: '**/node_modules'
+                  key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+            - name: Install packages
+              run: yarn
+            - name: All tests
+              run: yarn test
+
+    build:
+        name: Check build is committed
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repo
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+            - name: Setup node
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+              with:
+                  node-version: 22
+            - name: Restore node_modules cache
+              uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+              with:
+                  path: '**/node_modules'
+                  key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+            - name: Install packages
+              run: yarn
+            - name: Build
+              run: yarn build
+            - name: Ensure that the committed dist matches the build
+              # See if there are any diffs in the dist file. Grep returns an error
+              # when there are no changes, so we flip the output
+              run: (git diff --name-only | grep dist/index.js || exit 0 && exit 1)
+
+    build-playground:
+        name: Build the playground
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repo
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+            - name: Setup node
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+              with:
+                  node-version: 22
+            - name: Restore node_modules cache
+              uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+              with:
+                  path: '**/node_modules'
+                  key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+            - name: Install packages
+              run: yarn
+            - name: Build
+              run: yarn playground:build
+
+    # Use the branch we are running against, to write to our own PR
+    # to check the comment output
+    report-readability:
+        name: Report readability
+        needs: build
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repo
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+              with:
+                  fetch-depth: 0
+            - uses: ./
+              with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  glob: '**/*.md'

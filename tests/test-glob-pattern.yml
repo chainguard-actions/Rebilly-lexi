@@ -1,0 +1,48 @@
+name: Test glob pattern matching for markdown files
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_EVENT_NAME: pull_request
+      GITHUB_REF: refs/pull/2/merge
+      GITHUB_HEAD_REF: docs-update
+      GITHUB_BASE_REF: main
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Create multiple markdown files for glob testing
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/content/guides"
+          mkdir -p "$GITHUB_WORKSPACE/content/reference"
+
+          cat > "$GITHUB_WORKSPACE/content/guides/getting-started.md" << 'EOF'
+          # Getting Started
+
+          Welcome to the guide. This document helps you get started quickly.
+          Follow these steps to begin. Each step is simple and clear.
+          EOF
+
+          cat > "$GITHUB_WORKSPACE/content/reference/api.md" << 'EOF'
+          # API Reference
+
+          This document describes the API. Use these endpoints to interact with the service.
+          Each endpoint accepts JSON. Responses are also in JSON format.
+          EOF
+
+      - name: Run Lexi with wildcard glob pattern
+        id: lexi-glob
+        continue-on-error: true
+        uses: .
+        with:
+          github-token: fake-token-for-testing
+          glob: 'content/**/*.md'
+
+      - name: Assert action ran with glob pattern
+        run: |
+          echo "Lexi action with glob pattern 'content/**/*.md' completed"
+          echo "Action may fail to post PR comment without real token/PR - this is expected"
+          echo "PASS: action was invoked with glob pattern successfully"

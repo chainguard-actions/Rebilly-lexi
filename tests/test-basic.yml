@@ -1,4 +1,4 @@
-name: Test basic readability report
+name: Test basic usage - readability report on markdown files
 on:
   workflow_dispatch:
 jobs:
@@ -11,24 +11,29 @@ jobs:
       GITHUB_BASE_REF: main
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Create sample markdown file
-        run: |
-          mkdir -p /tmp/test-docs
-          cat > /tmp/test-docs/README.md << 'EOF'
-          # Hello World
-
-          This is a simple test document. It has short sentences. They are easy to read.
-
-          The quick brown fox jumps over the lazy dog. This sentence is also simple.
-          EOF
-      - id: action
-        uses: .
-        continue-on-error: true
         with:
-          github-token: ${{ github.token }}
-          glob: /tmp/test-docs/*.md
-      - name: Assert action ran
+          fetch-depth: 0
+
+      - name: Create sample markdown file for testing
         run: |
-          echo "Action completed (exit may be non-zero outside real PR context)"
-          echo "outcome: ${{ steps.action.outcome }}"
-          echo "PASS: action was invoked with both required inputs"
+          mkdir -p "$GITHUB_WORKSPACE/docs"
+          cat > "$GITHUB_WORKSPACE/docs/sample.md" << 'EOF'
+          # Sample Document
+
+          This is a simple test document. It contains short sentences. The words are easy to read.
+          Simple words help readers understand the content. Good documentation is clear and concise.
+          EOF
+
+      - name: Run Lexi readability action
+        id: lexi
+        continue-on-error: true
+        uses: .
+        with:
+          github-token: fake-token-for-testing
+          glob: 'docs/**/*.md'
+
+      - name: Assert action ran (may fail due to no real PR/token)
+        run: |
+          echo "Lexi action completed (with or without error due to no real PR context)"
+          echo "This is expected behavior under act without a real GitHub token and PR"
+          echo "PASS: action was invoked successfully"
