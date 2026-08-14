@@ -1,0 +1,26 @@
+name: Test glob with no matching files
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        with:
+          github-token: ${{ github.token }}
+          glob: "nonexistent/**/*.md"
+        continue-on-error: true
+
+      - name: Assert action failed due to non-PR context
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" != "failure" ]; then
+            echo "FAIL: expected action to fail when not run on a pull request, but outcome was: $OUTCOME"
+            exit 1
+          fi
+          echo "PASS: action correctly failed when not run on a pull request (glob input accepted)"

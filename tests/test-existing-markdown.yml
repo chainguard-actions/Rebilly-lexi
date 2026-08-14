@@ -1,4 +1,4 @@
-name: Test basic usage - pull request readability report
+name: Test with existing markdown files in repository
 on:
   workflow_dispatch:
 jobs:
@@ -14,26 +14,23 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Create sample markdown file for testing
+      - name: Verify markdown files exist
         run: |
-          mkdir -p docs
-          cat > docs/sample.md << 'EOF'
-          # Sample Documentation
-
-          This is a simple document. It uses short sentences. The words are easy to read.
-
-          Use this guide to get started. Follow the steps below. Each step is clear.
-
-          ## Installation
-
-          Run the install command. Wait for it to finish. Then start the app.
-          EOF
+          echo "Checking for markdown files matching test-data/**/*.md"
+          find test-data -name "*.md" | head -20
+          COUNT=$(find test-data -name "*.md" | wc -l)
+          echo "Found $COUNT markdown files"
+          if [ "$COUNT" -eq 0 ]; then
+            echo "FAIL: no markdown files found in test-data"
+            exit 1
+          fi
+          echo "PASS: found $COUNT markdown files"
 
       - id: action
         uses: .
         with:
           github-token: ${{ github.token }}
-          glob: 'docs/**/*.md'
+          glob: 'test-data/**/*.md'
         continue-on-error: true
 
       - name: Assert action ran without unexpected crash

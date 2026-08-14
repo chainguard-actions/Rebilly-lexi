@@ -1,4 +1,4 @@
-name: Test basic usage - pull request readability report
+name: Test glob pattern with no matching files
 on:
   workflow_dispatch:
 jobs:
@@ -14,26 +14,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Create sample markdown file for testing
-        run: |
-          mkdir -p docs
-          cat > docs/sample.md << 'EOF'
-          # Sample Documentation
-
-          This is a simple document. It uses short sentences. The words are easy to read.
-
-          Use this guide to get started. Follow the steps below. Each step is clear.
-
-          ## Installation
-
-          Run the install command. Wait for it to finish. Then start the app.
-          EOF
-
       - id: action
         uses: .
         with:
           github-token: ${{ github.token }}
-          glob: 'docs/**/*.md'
+          glob: 'nonexistent-dir/**/*.md'
         continue-on-error: true
 
       - name: Assert action ran without unexpected crash

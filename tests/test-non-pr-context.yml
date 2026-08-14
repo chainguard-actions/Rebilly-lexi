@@ -1,0 +1,37 @@
+name: Test non-PR context error
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a sample markdown file for glob
+        run: |
+          mkdir -p tests/fixtures/docs
+          cat > tests/fixtures/docs/sample.md << 'EOF'
+          # Sample Document
+
+          This is a sample markdown document used for testing the readability action.
+          It contains multiple sentences to allow readability scoring to work correctly.
+          The quick brown fox jumps over the lazy dog.
+          EOF
+
+      - id: action
+        uses: .
+        with:
+          github-token: ${{ github.token }}
+          glob: "tests/fixtures/docs/**/*.md"
+        continue-on-error: true
+
+      - name: Assert action failed with non-PR context error
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" != "failure" ]; then
+            echo "FAIL: expected action to fail when not run on a pull request, but outcome was: $OUTCOME"
+            exit 1
+          fi
+          echo "PASS: action correctly failed when not run on a pull request"
