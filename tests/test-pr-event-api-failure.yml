@@ -1,0 +1,55 @@
+name: Test pull request event with invalid token
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_EVENT_NAME: pull_request
+      GITHUB_REF: refs/pull/1/merge
+      GITHUB_HEAD_REF: feature-branch
+      GITHUB_BASE_REF: main
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Create pull_request event payload
+        run: |
+          mkdir -p /tmp/event
+          cat > /tmp/event/event.json <<'EOF'
+          {
+            "pull_request": {
+              "number": 1,
+              "base": {
+                "sha": "0000000000000000000000000000000000000001"
+              },
+              "head": {
+                "sha": "0000000000000000000000000000000000000002"
+              }
+            },
+            "repository": {
+              "full_name": "test-owner/test-repo"
+            }
+          }
+          EOF
+          echo "GITHUB_EVENT_PATH=/tmp/event/event.json" >> $GITHUB_ENV
+
+      - name: Run action on PR event (expect failure at API call)
+        id: action
+        uses: .
+        with:
+          github-token: fake-token-for-testing
+          glob: '**/*.md'
+        continue-on-error: true
+
+      - name: Assert action failed (expected - fake token causes API failure)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" != "failure" ]; then
+            echo "FAIL: expected action to fail due to invalid token/SHA, got outcome=$OUTCOME"
+            exit 1
+          fi
+          echo "PASS: action correctly failed when using invalid token (expected behavior in test environment)"

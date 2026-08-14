@@ -1,0 +1,41 @@
+name: Test glob pattern input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_EVENT_NAME: push
+      GITHUB_REF: refs/heads/main
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run action with specific glob pattern (non-PR event, expect graceful failure)
+        id: action
+        uses: .
+        with:
+          github-token: fake-token
+          glob: 'test-data/**/*.md'
+        continue-on-error: true
+
+      - name: Assert action failed gracefully (not on a PR)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" != "failure" ]; then
+            echo "FAIL: expected action to fail when not run on a pull request, got outcome=$OUTCOME"
+            exit 1
+          fi
+          echo "PASS: action correctly reported failure when not run on a pull request"
+
+      - name: Verify markdown files exist for the glob pattern
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          FILES=$(find . -path './test-data/**/*.md' 2>/dev/null | head -5)
+          echo "Found markdown files: $FILES"
+          if [ -z "$FILES" ]; then
+            echo "WARN: no markdown files found matching test-data/**/*.md"
+          else
+            echo "PASS: markdown files exist for glob pattern"
+          fi
