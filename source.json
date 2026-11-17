@@ -4,8 +4,13 @@
   "version": "v2.3.5",
   "commit_sha": "488dfdc828fc30925792e79711bb6dbffd79fb5c",
   "url": "https://github.com/Rebilly/lexi",
-  "policy_sha": "d636be7e43ef829af6e853da6b3c7566db9f72fe",
+  "policy_sha": "374911c4be584df24e6da57af2d990570ef0f859",
   "test_policy_sha": "843adf9e4b8f85d0c08b27b9d0b09dd094b54702",
   "test_agent_version": "2",
-  "harden_agent_version": "2"
+  "harden_agent_version": "2",
+  "dist_artifact": {
+    "gcs_uri": "gs://patch-actions-node-artifacts/dist-artifacts/Rebilly/lexi/v2.3.5/sha256-1792e538fecd7c808b87c1968877fd788ca15e1695b7aff38a6732b43bf91e46.tar.gz",
+    "sha256": "1792e538fecd7c808b87c1968877fd788ca15e1695b7aff38a6732b43bf91e46",
+    "size_bytes": 1079958
+  }
 }
